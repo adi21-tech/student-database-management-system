@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>GTTC · Student Records</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { background: #f2f4f6; color: #1a2634; }
+        .topbar { background: #0f2027; color: #fff; padding: 18px 30px; font-size: 18px; }
+        .topbar span { color: #00d894; font-weight: bold; }
+        .container { padding: 30px; }
+        h1 { margin-bottom: 20px; }
+        .toolbar { display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
+        .toolbar input, .toolbar select {
+            padding: 10px 14px; border: 1px solid #ccc; border-radius: 6px; font-size: 14px;
+        }
+        .btn {
+            padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; font-size: 14px;
+        }
+        .btn-apply { background: #00b86b; color: #fff; }
+        .btn-reset { background: #e0e0e0; color: #333; text-decoration: none; display: inline-block; }
+        .btn-add { background: #0f2027; color: #fff; margin-bottom: 16px; }
+        .btn-logout { background: #d9534f; color: #fff; }
+        .add-form {
+            display: none; gap: 10px; flex-wrap: wrap; background: #fff; padding: 16px;
+            border-radius: 8px; margin-bottom: 20px; border: 1px solid #ddd;
+        }
+        .add-form input { padding: 10px; border: 1px solid #ccc; border-radius: 6px; flex: 1; min-width: 120px; }
+        table { width: 100%; border-collapse: collapse; background: #fff; border-radius: 8px; overflow: hidden; }
+        th { background: #0f2027; color: #00d894; padding: 12px; text-align: left; }
+        td { padding: 12px; border-bottom: 1px solid #eee; }
+        .status { padding: 4px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; }
+        .pass { background: #d4f7e0; color: #0a8a4a; }
+        .fail { background: #fbdada; color: #c0392b; }
+        .del-btn { background: none; border: none; color: #d9534f; cursor: pointer; font-weight: bold; }
+        form.inline { display: inline; }
+    </style>
+</head>
+<body>
+    <div class="topbar"><span>GTTC</span> · Student Records</div>
+    <div class="container">
+        <h1>GTTC AIML — Student Records</h1>
+
+        <form class="toolbar" method="GET" action="/">
+            <input type="text" name="search" placeholder="Name or Roll No..." value="{{ search }}">
+            <input type="text" name="branch" placeholder="e.g. AIML" value="{{ branch_filter }}">
+            <select name="sort">
+                <option value="">-- Sort by --</option>
+                <option value="name" {% if sort == 'name' %}selected{% endif %}>Name</option>
+                <option value="roll_no" {% if sort == 'roll_no' %}selected{% endif %}>Roll No</option>
+                <option value="year" {% if sort == 'year' %}selected{% endif %}>Year</option>
+                <option value="marks" {% if sort == 'marks' %}selected{% endif %}>Marks</option>
+            </select>
+            <button type="submit" class="btn btn-apply">Apply</button>
+            <a href="/" class="btn btn-reset">Reset</a>
+        </form>
+
+        <button class="btn btn-add" onclick="document.getElementById('addForm').style.display =
+            document.getElementById('addForm').style.display === 'flex' ? 'none' : 'flex'">+ Add New Student</button>
+
+        <form id="addForm" class="add-form" method="POST" action="/add">
+            <input type="text" name="name" placeholder="Student Name" required>
+            <input type="text" name="roll_no" placeholder="Roll Number" required>
+            <input type="text" name="branch" placeholder="Branch" required>
+            <input type="text" name="year" placeholder="Year (e.g. 1st)" required>
+            <input type="number" step="0.01" name="marks" placeholder="Marks (0-100)" required>
+            <button type="submit" class="btn btn-apply">Save</button>
+        </form>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th><th>Name</th><th>Roll No</th><th>Branch</th><th>Year</th><th>Marks</th><th>Status</th><th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ student[1] }}</td>
+                    <td>{{ student[2] }}</td>
+                    <td>{{ student[3] }}</td>
+                    <td>{{ student[4] }}</td>
+                    <td>{{ "%.2f"|format(student[5]) }}</td>
+                    <td>
+                        {% if student[5]|float >= 35 %}
+                        <span class="status pass">Pass</span>
+                        {% else %}
+                        <span class="status fail">Fail</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <form class="inline" method="POST" action="/delete/{{ student[0] }}">
+                            <button type="submit" class="del-btn">Delete</button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <form method="POST" action="/logout" style="margin-top: 20px;">
+            <button type="submit" class="btn btn-logout">Logout</button>
+        </form>
+    </div>
+</body>
+</html>
